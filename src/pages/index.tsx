@@ -14,7 +14,10 @@ export default function Home(props: InferGetServerSidePropsType<typeof getServer
 
   const signInWithGoogle = async () => {
     supabase.auth.signInWithOAuth({
-      provider: "google"
+      provider: "google",
+      options: {
+        redirectTo: "http://localhost:3000/api/auth/callback"
+      }
     });
   }
 
@@ -64,14 +67,14 @@ export interface IndexPageServerSideProps {
 export const getServerSideProps = (async (context: GetServerSidePropsContext) => {
   const supabase = createServerClient(context);
 
-  const { user, error } = await getUser(supabase);
+  const { data: { user }, error: getUserError } = await supabase.auth.getUser();
 
-  if (!user || error) {
-    console.log({ user, error });
+  if (!user || getUserError) {
+    console.log({ user, getUserError });
     return {
       props: {
         user: null,
-        error: error?.message
+        error: getUserError?.message
       }
     }
   }
